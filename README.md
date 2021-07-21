@@ -1,24 +1,20 @@
 # nwd-curriculum-administration
 
-## Project setup
+> Curriculum Administration Software for 1st High School in Kraków
+
+## 🚀 Getting Started
+
 ```
-npm install
+$ git clone https://github.com/0xF76/nwd-curriculum-administration.git
+$ cd nwd-curriculum-administration
+$ npm install
 ```
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+After installation finishes type
 
-### Compiles and minifies for production
-```
-npm run build
-```
+- `npm run serve` to start the web application
+- `npm run electron:serve` to start electron application
 
-### Lints and fixes files
-```
-npm run lint
-```
+## ⚙️ Configuration
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+Rename `firebase.js.example` to `firebase.js` and paste firebase config of your project.
