@@ -1,0 +1,19 @@
+import firebase from "firebase/app";
+import "firebase/firestore";
+
+const firebasApp = firebase.initializeApp({
+    apiKey: "",
+    authDomain: "",
+    projectId: "",
+    storageBucket: "",
+    messagingSenderId: "",
+    appId: "",
+    measurementId: ""
+
+  
+});
+
+const db = firebasApp.firestore();
+const FieldValue = firebase.firestore.FieldValue;
+
+export { db, FieldValue };
