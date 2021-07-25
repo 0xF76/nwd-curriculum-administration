@@ -158,6 +158,23 @@
                   >
                 </v-card-text>
               </v-card>
+              <v-snackbar
+                v-model="addSnackbar"
+                :timeout="2500"
+                color="warning"
+                absolute
+                class="ma-2"
+              >
+                <v-layout align-center pr-4>
+                  <v-icon class="pr-3" dark large>mdi-alert</v-icon>
+                  <v-layout column>
+                    <div>
+                      <strong>Ostrzeżenie</strong>
+                    </div>
+                    <div>Istnieje już taka klasa</div>
+                  </v-layout>
+                </v-layout>
+              </v-snackbar>
             </v-col>
             <v-col style="padding-right: 0px">
               <v-card>
@@ -251,6 +268,7 @@ export default {
       classToAdd: "",
       classToDelete: "",
       dialogDelete: false,
+      addSnackbar: false,
     };
   },
   methods: {
@@ -331,7 +349,7 @@ export default {
       let docRef = db.collection("klasy").doc(this.classToAdd.toUpperCase());
       docRef.get().then((doc) => {
         if (doc.exists) {
-          //TODO: poinformuj uzytkownika ze istnieje juz taka klasa
+          this.addSnackbar = true;
         } else {
           db.collection("klasy").doc(this.classToAdd.toUpperCase()).set({});
         }
