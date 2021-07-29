@@ -15,10 +15,7 @@
       </v-list-item>
       <v-divider></v-divider>
       <v-list dense nav>
-        <v-list-item link to="/">Strona Główna</v-list-item>
-      </v-list>
-      <v-list dense nav>
-        <v-list-item link to="/classes">Klasy</v-list-item>
+        <v-list-item link to="/">Klasy</v-list-item>
         <v-list-item link to="/curriculum-table-classes"
           >Programy Nauczania (Klasy)</v-list-item
         >

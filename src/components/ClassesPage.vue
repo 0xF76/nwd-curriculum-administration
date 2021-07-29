@@ -1,13 +1,13 @@
 <template>
   <v-container fluid style="height: 100%">
     <v-row class="text-center" style="height: 100%">
-      <v-col>
+      <v-col cols="6">
         <v-card height="100%">
           <v-tabs
             background-color="blue darken-1"
-            center-active
             dark
             v-model="tab"
+            show-arrows
           >
             <v-tab v-for="klasa in classes" :key="klasa.id">
               {{ klasa.id }}
