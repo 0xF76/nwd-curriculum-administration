@@ -50,7 +50,7 @@
             Dodaj
           </v-btn>
           <v-btn @click="downloadData()" dark color="red">Pobierz</v-btn>
-          <v-dialog v-model="dialogAdd" max-width="750px">
+          <v-dialog v-model="dialogAdd" max-width="1000px">
             <v-card>
               <v-card-title class="text-h5 justify-center">
                 Dodaj nowy program nauczania
