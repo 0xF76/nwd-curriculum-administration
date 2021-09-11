@@ -44,7 +44,7 @@
             color="indigo"
             @click="
               addItem();
-              getTeachersAndSubjects();
+              getTeachersAndSubjectsAndBooks();
             "
           >
             Dodaj
@@ -90,6 +90,15 @@
                         label="Nauczyciel"
                         v-model="addTeacher"
                         :items="teachers"
+                      ></v-combobox>
+                    </v-col>
+                    <v-col>
+                      <v-combobox
+                        required
+                        :rules="[(v) => !!v || 'Podręcznik jest wymagany']"
+                        label="Podręcznik"
+                        v-model="addBook"
+                        :items="books"
                       ></v-combobox>
                     </v-col>
                   </v-row>
@@ -151,6 +160,7 @@ export default {
         { text: "Numer", align: "start", value: "numer" },
         { text: "Program", align: "start", value: "program" },
         { text: "Nauczyciel", align: "start", value: "nauczyciel" },
+        { text: "Podręcznik", align: "start", value: "podrecznik" },
         { value: "actions", sortable: false },
       ],
       curriculums: null,
@@ -170,6 +180,8 @@ export default {
       addCurriculum: "",
       addSubject: "",
       addValid: false,
+      books: null,
+      addBook: "",
     };
   },
 
@@ -209,15 +221,18 @@ export default {
     addItem() {
       this.dialogAdd = true;
     },
-    getTeachersAndSubjects() {
+    getTeachersAndSubjectsAndBooks() {
       this.teachers = [];
       this.subjects = [];
+      this.books = [];
       this.curriculums.map((doc) => {
         this.teachers.push(doc.nauczyciel);
         this.subjects.push(doc.przedmiot);
+        this.books.push(doc.podrecznik);
       });
       this.teachers = Array.from(new Set(this.teachers));
       this.subjects = Array.from(new Set(this.subjects));
+      this.books = Array.from(new Set(this.books));
     },
     async addItemConfirm() {
       await db.collection("programyNauczania").add({
@@ -225,6 +240,7 @@ export default {
         numer: this.addNumber,
         program: this.addCurriculum,
         przedmiot: this.addSubject,
+        podrecznik: this.addBook,
       });
       this.closeAdd();
     },
@@ -234,7 +250,7 @@ export default {
     },
     //download data function
     downloadData() {
-      const fields = ["przedmiot", "numer", "program", "nauczyciel"];
+      const fields = ["przedmiot", "numer", "program", "nauczyciel", "podręcznik"];
       const opts = { fields };
       try {
         const parser = new Parser(opts);

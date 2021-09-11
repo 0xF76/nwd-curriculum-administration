@@ -1,7 +1,7 @@
 <template>
   <v-container fluid style="height: 100%">
     <v-row class="text-center" style="height: 100%">
-      <v-col cols="6">
+      <v-col cols="5">
         <v-card height="100%">
           <v-tabs
             background-color="blue darken-1"
@@ -13,6 +13,18 @@
               {{ klasa.id }}
             </v-tab>
             <v-tab-item v-for="item in classes" :key="item.id">
+              <v-toolbar flat class="align-center">
+                <v-toolbar-title
+                  >Programy Nauczania Klasy {{ item.id }}</v-toolbar-title
+                >
+                <v-spacer></v-spacer>
+                <v-btn
+                  dark
+                  color="red"
+                  @click="downloadData(Object.values(item).filter(Boolean), item.id)"
+                  >Pobierz</v-btn
+                >
+              </v-toolbar>
               <v-data-table
                 :headers="headers"
                 :items="Object.values(item).filter(Boolean)"
@@ -82,7 +94,7 @@
                     @focus="getClassesNames()"
                     :items="classesNames"
                     v-model="selectedClass"
-                    label="Wybierz klasę"
+                    label="Klasa"
                     no-data-text="Nie znaleziono klasy"
                   ></v-autocomplete>
                 </v-col>
@@ -93,7 +105,7 @@
                     :rules="[(v) => !!v || 'Nauczyciel jest wymagany']"
                     @focus="getTeachers()"
                     :items="teachers"
-                    label="Wybierz nauczyciela"
+                    label="Nauczyciel"
                     v-model="selectedTeacher"
                     no-data-text="Nie znaleziono nauczyciela"
                   ></v-autocomplete>
@@ -106,7 +118,7 @@
                     @focus="getTeacherSubjects()"
                     :items="teacherSubjects"
                     v-model="selectedSubject"
-                    label="Wybierz przedmiot"
+                    label="Przedmiot"
                     no-data-text="Nie znaleziono przedmiotu"
                   ></v-autocomplete>
                 </v-col>
@@ -118,8 +130,20 @@
                     @focus="getTeacherCurriculums()"
                     :items="teacherCurriculums"
                     v-model="selectedCurriculum"
-                    label="Wybierz program"
+                    label="Program"
                     no-data-text="Nie znaleziono programu"
+                  ></v-autocomplete>
+                </v-col>
+                <v-col>
+                  <v-autocomplete
+                    filled
+                    required
+                    :rules="[(v) => !!v || 'Podręcznik jest wymagany']"
+                    @focus="getSubjectBooks()"
+                    :items="subjectBooks"
+                    v-model="selectedBook"
+                    label="Podręcznik"
+                    no-data-text="Nie znaleziono podręcznika"
                   ></v-autocomplete>
                 </v-col>
               </v-row>
@@ -232,6 +256,8 @@
 </template>
 <script>
 import { db, FieldValue } from "@/firebase";
+const { Parser } = require("json2csv");
+const download = require("downloadjs");
 
 export default {
   firestore() {
@@ -247,8 +273,10 @@ export default {
       tab: null,
       headers: [
         { text: "Przedmiot", align: "start", value: "przedmiot" },
+        { text: "Numer", align: "start", value: "numer" },
         { text: "Program", align: "start", value: "program" },
         { text: "Nauczyciel", align: "start", value: "nauczyciel" },
+        { text: "Podręcznik", align: "start", value: "podrecznik" },
         { value: "actions", sortable: false },
       ],
       curriculumSubjectToDelete: "",
@@ -269,6 +297,8 @@ export default {
       classToDelete: "",
       dialogDelete: false,
       addSnackbar: false,
+      subjectBooks: [],
+      selectedBook: "",
     };
   },
   methods: {
@@ -326,12 +356,25 @@ export default {
       });
       this.teacherCurriculums = Array.from(new Set(this.teacherCurriculums));
     },
+    async getSubjectBooks() {
+      this.subjectBooks = [];
+      const snapshot = await db
+        .collection("programyNauczania")
+        .where("nauczyciel", "==", this.selectedTeacher)
+        .where("przedmiot", "==", this.selectedSubject)
+        .get();
+      snapshot.forEach((doc) => {
+        this.subjectBooks.push(doc.data().podrecznik);
+      });
+      this.subjectBooks = Array.from(new Set(this.subjectBooks));
+    },
     async addCurriculumToClass() {
       const curr = await db
         .collection("programyNauczania")
         .where("nauczyciel", "==", this.selectedTeacher)
         .where("przedmiot", "==", this.selectedSubject)
         .where("program", "==", this.selectedCurriculum)
+        .where("podrecznik", "==", this.selectedBook)
         .get();
       db.collection("klasy")
         .doc(this.selectedClass)
@@ -367,6 +410,23 @@ export default {
     closeDelete() {
       this.dialogDelete = false;
       this.$refs.deleteClassForm.reset();
+    },
+    downloadData(data, id) {
+      const fields = [
+        "przedmiot",
+        "numer",
+        "program",
+        "nauczyciel",
+        "podręcznik",
+      ];
+      const opts = { fields };
+      try {
+        const parser = new Parser(opts);
+        const csv = parser.parse(data);
+        download(csv, `programyNauczaniaKlasa${id}.csv`, "text/plain");
+      } catch (error) {
+        console.error(error);
+      }
     },
   },
 };

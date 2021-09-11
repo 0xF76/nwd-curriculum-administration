@@ -1,7 +1,7 @@
 <template>
   <v-container fluid style="height: 100%">
     <v-row class="text-center" style="height: 100%">
-      <v-col>
+      <v-col cols="5">
         <v-card height="100%">
           <v-tabs
             background-color="blue darken-1"
@@ -13,6 +13,20 @@
               {{ grupa.id }}
             </v-tab>
             <v-tab-item v-for="item in languageGroups" :key="item.id">
+              <v-toolbar flat class="align-center">
+                <v-toolbar-title
+                  >Programy Nauczania Grupy {{ item.id }}</v-toolbar-title
+                >
+                <v-spacer></v-spacer>
+                <v-btn
+                  dark
+                  color="red"
+                  @click="
+                    downloadData(Object.values(item).filter(Boolean), item.id)
+                  "
+                  >Pobierz</v-btn
+                >
+              </v-toolbar>
               <v-data-table
                 :headers="headers"
                 :items="Object.values(item).filter(Boolean)"
@@ -121,6 +135,18 @@
                     v-model="selectedCurriculum"
                     label="Wybierz program"
                     no-data-text="Nie znaleziono programu"
+                  ></v-autocomplete>
+                </v-col>
+                <v-col>
+                  <v-autocomplete
+                    filled
+                    required
+                    :rules="[(v) => !!v || 'Podręcznik jest wymagany']"
+                    @focus="getSubjectBooks()"
+                    :items="subjectBooks"
+                    v-model="selectedBook"
+                    label="Podręcznik"
+                    no-data-text="Nie znaleziono podręcznika"
                   ></v-autocomplete>
                 </v-col>
               </v-row>
@@ -240,6 +266,8 @@
 </template>
 <script>
 import { db, FieldValue } from "@/firebase";
+const { Parser } = require("json2csv");
+const download = require("downloadjs");
 
 export default {
   firestore() {
@@ -255,8 +283,10 @@ export default {
       tab: null,
       headers: [
         { text: "Przedmiot", align: "start", value: "przedmiot" },
+        { text: "Numer", align: "start", value: "numer" },
         { text: "Program", align: "start", value: "program" },
         { text: "Nauczyciel", align: "start", value: "nauczyciel" },
+        { text: "Podręcznik", align: "start", value: "podrecznik" },
         { value: "actions", sortable: false },
       ],
       curriculumSubjectToDelete: "",
@@ -277,6 +307,8 @@ export default {
       groupToDelete: "",
       deleteValid: false,
       addSnackbar: false,
+      subjectBooks: [],
+      selectedBook: "",
     };
   },
   methods: {
@@ -334,12 +366,25 @@ export default {
       });
       this.teacherCurriculums = Array.from(new Set(this.teacherCurriculums));
     },
+    async getSubjectBooks() {
+      this.subjectBooks = [];
+      const snapshot = await db
+        .collection("programyNauczaniaJęzyki")
+        .where("nauczyciel", "==", this.selectedTeacher)
+        .where("przedmiot", "==", this.selectedLanguage)
+        .get();
+      snapshot.forEach((doc) => {
+        this.subjectBooks.push(doc.data().podrecznik);
+      });
+      this.subjectBooks = Array.from(new Set(this.subjectBooks));
+    },
     async addCurriculumToGroup() {
       const curr = await db
         .collection("programyNauczaniaJęzyki")
         .where("nauczyciel", "==", this.selectedTeacher)
         .where("przedmiot", "==", this.selectedLanguage)
         .where("program", "==", this.selectedCurriculum)
+        .where("podrecznik", "==", this.selectedBook)
         .get();
       db.collection("grupyJęzykowe")
         .doc(this.selectedGroup)
@@ -378,6 +423,23 @@ export default {
     closeDelete() {
       this.dialogDelete = false;
       this.$refs.deleteGroupForm.reset();
+    },
+    downloadData(data, id) {
+      const fields = [
+        "przedmiot",
+        "numer",
+        "program",
+        "nauczyciel",
+        "podręcznik",
+      ];
+      const opts = { fields };
+      try {
+        const parser = new Parser(opts);
+        const csv = parser.parse(data);
+        download(csv, `programyNauczaniaGrupaJezykowa${id}.csv`, "text/plain");
+      } catch (error) {
+        console.error(error);
+      }
     },
   },
 };
