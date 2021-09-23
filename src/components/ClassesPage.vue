@@ -417,13 +417,13 @@ export default {
         "numer",
         "program",
         "nauczyciel",
-        "podręcznik",
+        "podrecznik",
       ];
       const opts = { fields };
       try {
         const parser = new Parser(opts);
         const csv = parser.parse(data);
-        download(csv, `programyNauczaniaKlasa${id}.csv`, "text/plain");
+        download(csv, `programyNauczaniaKlasa${id}.txt`, "text/plain");
       } catch (error) {
         console.error(error);
       }

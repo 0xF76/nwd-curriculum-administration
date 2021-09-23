@@ -245,12 +245,12 @@ export default {
       this.$refs.form.reset();
     },
     downloadData() {
-      const fields = ["przedmiot", "numer", "program", "nauczyciel", "podręcznik"];
+      const fields = ["przedmiot", "numer", "program", "nauczyciel", "podrecznik"];
       const opts = { fields };
       try {
         const parser = new Parser(opts);
         const csv = parser.parse(this.languageGroupsCurriculums);
-        download(csv, "programyNauczaniaJezyki.csv", "text/plain");
+        download(csv, "programyNauczaniaJezyki.txt", "text/plain");
       } catch (error) {
         console.error(error);
       }

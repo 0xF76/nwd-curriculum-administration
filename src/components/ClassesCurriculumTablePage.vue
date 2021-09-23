@@ -250,12 +250,12 @@ export default {
     },
     //download data function
     downloadData() {
-      const fields = ["przedmiot", "numer", "program", "nauczyciel", "podręcznik"];
+      const fields = ["przedmiot", "numer", "program", "nauczyciel", "podrecznik"];
       const opts = { fields };
       try {
         const parser = new Parser(opts);
         const csv = parser.parse(this.curriculums);
-        download(csv, "programyNauczaniaJęzyki.csv", "text/plain");
+        download(csv, "programyNauczaniaJęzyki.txt", "text/plain");
       } catch (error) {
         console.error(error);
       }
