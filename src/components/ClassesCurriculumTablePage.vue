@@ -21,6 +21,69 @@
             single-line
             hide-details
           ></v-text-field>
+          <v-dialog v-model="dialogEdit" max-width="1000px">
+            <v-card>
+              <v-card-title class="text-h5">
+                Edytowanie programu nauczania
+              </v-card-title>
+              <v-card-text>
+                <v-form ref="editForm">
+                  <v-row>
+                    <v-col>
+                      <v-combobox
+                        v-model="editedItem.przedmiot"
+                        required
+                        :rules="[(v) => !!v || 'Przedmiot jest wymagany']"
+                        label="Przedmiot"
+                        :items="subjects"
+                      >
+                      </v-combobox>
+                    </v-col>
+                    <v-col>
+                      <v-text-field
+                        label="Numer programu"
+                        v-model="editedItem.numer"
+                        required
+                        :rules="[(v) => !!v || 'Numer jest wymagany']"
+                      ></v-text-field>
+                    </v-col>
+                    <v-col>
+                      <v-text-field
+                        required
+                        :rules="[(v) => !!v || 'Program jest wymagany']"
+                        label="Nazwa programu"
+                        v-model="editedItem.program"
+                      ></v-text-field>
+                    </v-col>
+                    <v-col>
+                      <v-combobox
+                        required
+                        :rules="[(v) => !!v || 'Nauczyciel jest wymagany']"
+                        label="Nauczyciel"
+                        v-model="editedItem.nauczyciel"
+                        :items="teachers"
+                      ></v-combobox>
+                    </v-col>
+                    <v-col>
+                      <v-combobox
+                        required
+                        :rules="[(v) => !!v || 'Podręcznik jest wymagany']"
+                        label="Podręcznik"
+                        v-model="editedItem.podrecznik"
+                        :items="books"
+                      ></v-combobox>
+                    </v-col>
+                  </v-row>
+                </v-form>
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="blue darken-1" text @click="editItemConfirm()">Potwierdź</v-btn>
+                <v-btn color="blue darken-1" text @click="closeEdit()">Anuluj</v-btn>
+                <v-spacer></v-spacer>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
           <v-dialog v-model="dialogDelete" max-width="650px">
             <v-card>
               <v-card-title class="text-h5 justify-center">
@@ -132,6 +195,15 @@
         <v-icon
           small
           class="mr-2"
+          @click="
+            editItem(item);
+            getTeachersAndSubjectsAndBooks();
+          "
+          >mdi-pencil</v-icon
+        >
+        <v-icon
+          small
+          class="mr-2"
           @click="deleteItem(item.id, item.nauczyciel, item.przedmiot)"
         >
           mdi-delete
@@ -182,6 +254,14 @@ export default {
       addValid: false,
       books: null,
       addBook: "",
+      dialogEdit: false,
+      editedItem: {
+        przedmiot: "",
+        numer: "",
+        program: "",
+        nauczyciel: "",
+        podrecznik: "",
+      },
     };
   },
 
@@ -248,9 +328,40 @@ export default {
       this.dialogAdd = false;
       this.$refs.form.reset();
     },
+    async editItem(item) {
+      this.editedId = item.id;
+
+      const snapshot = await db
+        .collection("programyNauczania")
+        .doc(this.editedId)
+        .get();
+      this.editedItem = snapshot.data();
+      this.dialogEdit = true;
+    },
+    async editItemConfirm() {
+      await db.collection('programyNauczania').doc(this.editedId).set({
+        nauczyciel: this.editedItem.nauczyciel,
+        numer: this.editedItem.numer,
+        program: this.editedItem.program,
+        przedmiot: this.editedItem.przedmiot,
+        podrecznik: this.editedItem.podrecznik
+      });
+      this.closeEdit();
+    },
+    closeEdit() {
+      this.dialogEdit = false;
+      this.editedId = "";
+      this.$refs.editForm.reset();
+    },
     //download data function
     downloadData() {
-      const fields = ["przedmiot", "numer", "program", "nauczyciel", "podrecznik"];
+      const fields = [
+        "przedmiot",
+        "numer",
+        "program",
+        "nauczyciel",
+        "podrecznik",
+      ];
       const opts = { fields };
       try {
         const parser = new Parser(opts);

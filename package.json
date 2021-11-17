@@ -2,7 +2,7 @@
   "name": "nwd-curriculum-administration",
   "author": "Jakub Bubak <jakub.bubak03@gmail.com>",
   "description": "Curriculum Administration Software for 1st High School in Kraków",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
